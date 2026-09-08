@@ -1,0 +1,46 @@
+{
+  "name": "astro-type",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.astrotype.game",
+    "productName": "Astro Type",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/**",
+      "!test-results/**",
+      "!*.spec.js",
+      "!playwright.config.js",
+      "!android/**",
+      "!release/**"
+    ],
+    "mac": {
+      "icon": "assets/icon.icns",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.games"
+    },
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    }
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "electron": "^44.2.0",
+    "electron-builder": "^24.13.3"
+  }
+}

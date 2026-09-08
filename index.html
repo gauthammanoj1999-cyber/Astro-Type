@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+      // Force wipe all legacy service workers and cached assets on boot
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          for (const reg of registrations) {
+            reg.unregister();
+          }
+        });
+      }
+      if ('caches' in window) {
+        caches.keys().then(keys => {
+          for (const key of keys) {
+            caches.delete(key);
+          }
+        });
+      }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#080910">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Astro Type</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+    <!-- Hidden input for mobile keyboard -->
+    <input type="text" id="mobile-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
+    <!-- HUD -->
+    <header class="hud">
+        <div class="hud-left">
+            <div class="stat-group" id="hud-level-group">
+                <span class="stat-label">LEVEL</span>
+                <span class="stat-value text-neon" id="hud-level">1</span>
+            </div>
+            <div class="stat-group" id="hud-timer-group" style="display: none;">
+                <span class="stat-label">TIME</span>
+                <span class="stat-value text-neon" id="hud-timer">01:30</span>
+            </div>
+            <div class="stat-group">
+                <span class="stat-label">SCORE</span>
+                <span class="stat-value" id="hud-score">0</span>
+            </div>
+            <div class="stat-group">
+                <span class="stat-label">WPM</span>
+                <span class="stat-value" id="hud-wpm">0</span>
+            </div>
+            <div class="stat-group">
+                <span class="stat-label">ACC</span>
+                <span class="stat-value" id="hud-acc">100%</span>
+            </div>
+        </div>
+        
+        <div class="hud-center">
+            <div class="stat-group">
+                <span class="stat-label">HULL INTEGRITY</span>
+                <div class="shields" id="hud-shields">
+                    <span class="shield-icon active">⬢</span>
+                    <span class="shield-icon active">⬢</span>
+                    <span class="shield-icon active">⬢</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="hud-right">
+            <button type="button" id="btn-pause" class="btn btn-icon" aria-label="Pause Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="10" y1="9" x2="10" y2="15"></line>
+                    <line x1="14" y1="9" x2="14" y2="15"></line>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Game Area -->
+    <main id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="wave-banner" class="wave-banner"></div>
+        <div id="mobile-prompt" class="floating-prompt">Tap to Deploy Fire Controls</div>
+    </main>
+
+    <!-- Modals -->
+    <div id="modal-menu" class="modal active">
+        <div class="modal-content cyber-panel" style="max-width: 800px;">
+            <h1>ASTRO<br><span class="highlight">TYPE</span></h1>
+            
+            <div class="mode-selection" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                <button type="button" class="btn btn-mode" data-mode="campaign">
+                    <span class="mode-title">CAMPAIGN</span>
+                    <span class="mode-desc">Standard survival. Infinite levels.</span>
+                </button>
+                <button type="button" class="btn btn-mode" data-mode="sniper">
+                    <span class="mode-title text-alert">SNIPER</span>
+                    <span class="mode-desc">Strict accuracy. Typos crack shields.</span>
+                </button>
+                <button type="button" class="btn btn-mode" data-mode="blitz">
+                    <span class="mode-title" style="color: var(--accent-amber)">BLITZ</span>
+                    <span class="mode-desc">90s Time Attack. Extra time on perfects.</span>
+                </button>
+                <button type="button" class="btn btn-mode" data-mode="zen">
+                    <span class="mode-title" style="color: var(--accent-violet)">FREE ORBIT</span>
+                    <span class="mode-desc">Endless practice. No shields or damage.</span>
+                </button>
+            </div>
+            
+            <div class="modal-actions" style="flex-wrap: wrap;">
+                <button type="button" class="btn btn-secondary" id="btn-show-leaderboard">LEADERBOARDS</button>
+                <button type="button" class="btn btn-secondary" id="btn-show-settings">SETTINGS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Modal -->
+    <div id="modal-leaderboard" class="modal">
+        <div class="modal-content cyber-panel" style="max-width: 700px; padding: 2rem;">
+            <h2>HIGH SCORES</h2>
+            <div class="lb-tabs" style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
+                <button type="button" class="btn lb-tab active" data-tab="campaign">CAMPAIGN</button>
+                <button type="button" class="btn lb-tab" data-tab="sniper">SNIPER</button>
+                <button type="button" class="btn lb-tab" data-tab="blitz">BLITZ</button>
+            </div>
+            <div class="lb-table-container">
+                <table class="lb-table">
+                    <thead>
+                        <tr>
+                            <th>RANK</th>
+                            <th>CALLSIGN</th>
+                            <th>SCORE</th>
+                            <th>LEVEL</th>
+                            <th>WPM</th>
+                            <th>ACC</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lb-tbody">
+                        <!-- Populated via JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-actions" style="margin-top: 2rem;">
+                <button type="button" class="btn btn-secondary" id="btn-close-leaderboard">BACK TO MENU</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Callsign Entry Modal -->
+    <div id="modal-callsign" class="modal" style="z-index: 250;">
+        <div class="modal-content cyber-panel">
+            <h2 class="text-neon" style="animation: pulse 1s infinite;">NEW HIGH SCORE</h2>
+            <p style="margin-bottom: 2rem; font-family: var(--font-mono);">Enter your callsign to record your victory.</p>
+            <div class="callsign-inputs">
+                <input type="text" id="callsign-input" maxlength="12" class="callsign-input" placeholder="ENTER CALLSIGN" autocomplete="off" spellcheck="false" />
+            </div>
+            <div class="modal-actions" style="margin-top: 2rem;">
+                <button type="button" class="btn btn-primary" id="btn-save-callsign">SUBMIT</button>
+                <button type="button" class="btn btn-secondary" id="btn-skip-callsign">SKIP</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="modal-gameover" class="modal">
+        <div class="modal-content cyber-panel alert-panel">
+            <h2 id="gameover-title" class="text-alert">HULL BREACH DETECTED</h2>
+            <div class="final-stats">
+                <div class="stat-box">
+                    <span class="label">SCORE</span>
+                    <span class="value" id="final-score">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="label">LEVEL</span>
+                    <span class="value" id="final-level">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="label">WPM</span>
+                    <span class="value" id="final-wpm">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="label">ACC</span>
+                    <span class="value" id="final-acc">0%</span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-primary" id="btn-restart">REBOOT SYSTEM</button>
+                <button type="button" class="btn btn-secondary" id="btn-mainmenu">ABORT</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pause Modal -->
+    <div id="modal-pause" class="modal" style="z-index: 210;">
+        <div class="modal-content cyber-panel" style="max-width: 500px;">
+            <h2 class="text-neon" style="text-align: center; margin-bottom: 2rem;">SYSTEM PAUSED</h2>
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <button type="button" class="btn btn-primary" id="btn-resume">RESUME GAME</button>
+                <button type="button" class="btn btn-secondary" id="btn-restart-sector">RESTART SECTOR</button>
+                <button type="button" class="btn btn-secondary" id="btn-toggle-audio">AUDIO: ON</button>
+                <button type="button" class="btn btn-secondary" id="btn-toggle-haptics">HAPTICS: ON</button>
+                <button type="button" class="btn btn-secondary" id="btn-abort-mission" style="border-color: var(--accent-crimson); color: var(--accent-crimson); margin-top: 1rem;">ABORT MISSION</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="modal-settings" class="modal">
+        <div class="modal-content cyber-panel" style="max-width: 500px;">
+            <h2>SYSTEM SETTINGS</h2>
+            <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-top: 2rem;">
+                <button type="button" class="btn btn-primary" id="btn-show-privacy">PRIVACY POLICY</button>
+                <button type="button" class="btn btn-secondary" id="btn-clear-data" style="border-color: var(--accent-crimson); color: var(--accent-crimson);">CLEAR ALL SAVED DATA</button>
+            </div>
+            <div class="modal-actions" style="margin-top: 2.5rem;">
+                <button type="button" class="btn btn-secondary" id="btn-close-settings">BACK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div id="modal-privacy" class="modal" style="z-index: 260;">
+        <div class="modal-content cyber-panel" style="max-width: 600px; text-align: left;">
+            <h2 class="text-neon" style="text-align: center;">PRIVACY PROTOCOL</h2>
+            <p style="font-family: var(--font-mono); color: var(--text-primary); line-height: 1.6; margin-bottom: 1rem;">
+                All game data, including high scores, callsigns, and progress metrics, is strictly stored locally on your device via HTML5 Local Storage.
+            </p>
+            <p style="font-family: var(--font-mono); color: var(--text-muted); line-height: 1.6;">
+                We do not collect, transmit, or process any personal telemetry or analytics. If you clear your browser data or use the "Clear All Saved Data" option, your records will be permanently erased.
+            </p>
+            <div class="modal-actions" style="margin-top: 2.5rem; justify-content: center;">
+                <button type="button" class="btn btn-secondary" id="btn-close-privacy">ACKNOWLEDGE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script type="module" src="js/app.js?v=1.0.1"></script>
+</body>
+</html>

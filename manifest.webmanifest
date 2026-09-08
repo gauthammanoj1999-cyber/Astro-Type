@@ -1,0 +1,17 @@
+{
+  "name": "Antigravity Type",
+  "short_name": "AgType",
+  "description": "A cross-platform zero-gravity typing game.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0b10",
+  "theme_color": "#0a0b10",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

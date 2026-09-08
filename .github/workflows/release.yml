@@ -1,0 +1,44 @@
+name: Build & Release Desktop Installers
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Build macOS Artifacts
+        if: runner.os == 'macOS'
+        run: npm run dist:mac
+
+      - name: Build Windows Artifacts
+        if: runner.os == 'Windows'
+        run: npm run dist:win
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: astro-type-${{ runner.os }}
+          path: |
+            dist/*.dmg
+            dist/*.zip
+            dist/*.exe

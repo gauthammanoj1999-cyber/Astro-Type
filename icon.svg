@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+    <rect width="1024" height="1024" fill="#0a0a16"/>
+    <radialGradient id="nebula" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#2a004f" stop-opacity="0.8"/>
+        <stop offset="100%" stop-color="#0a0a16" stop-opacity="0"/>
+    </radialGradient>
+    <rect width="1024" height="1024" fill="url(#nebula)"/>
+    
+    <path d="M512 150 L650 200 L800 350 L750 550 L850 700 L650 850 L512 800 L300 850 L200 700 L150 450 L300 250 Z" fill="#151126" stroke="#b53cff" stroke-width="12" stroke-linejoin="round"/>
+    
+    <line x1="50" y1="900" x2="974" y2="124" stroke="#ff00ff" stroke-width="60" stroke-linecap="round" opacity="0.6" style="filter: blur(8px);"/>
+    <line x1="50" y1="900" x2="974" y2="124" stroke="#00ffff" stroke-width="30" stroke-linecap="round"/>
+    <line x1="50" y1="900" x2="974" y2="124" stroke="#ffffff" stroke-width="12" stroke-linecap="round"/>
+
+    <rect x="362" y="362" width="300" height="300" rx="40" fill="#050508" stroke="#00f0ff" stroke-width="8" opacity="0.9"/>
+    <rect x="412" y="412" width="200" height="200" rx="20" fill="#101018" stroke="#333" stroke-width="4"/>
+    
+    <text x="512" y="562" font-family="'JetBrains Mono', 'Orbitron', monospace" font-size="140" font-weight="900" fill="#00f0ff" text-anchor="middle" letter-spacing="0">A</text>
+</svg>
